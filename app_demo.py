@@ -8,9 +8,10 @@ from code.plotting.st_plots import st_plots
 
 # Style Customization
 plt.rcParams['font.family'] = 'DejaVu Sans'
+st.set_page_config(layout = 'wide', page_title = 'FiFo Demo')
 
 # load database
-df = pd.read_csv('data/processed_chicago.csv')
+inspections = pd.read_csv('data/processed_chicago.csv')
 
 def remove_punctuation(text):
     '''
@@ -20,6 +21,17 @@ def remove_punctuation(text):
         return text.translate(str.maketrans('', '', string.punctuation))
     return text
 
+def get_restaurant_data(selected_location, search_term):
+    selected_data = inspections[
+            (inspections["name_cleaned"].str.contains(search_term, case=False, na=False)) &
+            (inspections["address"] == selected_location)
+            ].sort_values(by = 'inspection_date')
+
+    return selected_data
+
+
+# Title
+st.title(':blue[Fi]:red[Fo]')
 
 # --- Sidebar Section ---
 st.sidebar.title("About")
@@ -31,26 +43,20 @@ st.sidebar.info(
     """
 )
 
-# --- Main App Section ---
-st.title(':blue[Fi]:red[Fo] Demo', anchor = False)
-st.divider()
 
-# Layout: Create two columns for search and dropdown
-col1, col2 = st.columns([1, 1])
+# Page Layout
+left_col, mid_col, right_col = st.columns([2, 5, 2])
 
-# 1. Search Bar
-with col1:
+
+with left_col:
     search_term = st.text_input("Search for a restaurant:")
 
-# Process the user input
-search_term_cleaned = remove_punctuation(search_term)
-
-# 2. Display matching restaurant names and locations for selection
-with col2:
-    if search_term:
-        filtered_df = df[df["aka_name"].str.contains(search_term, case=False, na=False)]
-        if not filtered_df.empty:
-            options = filtered_df["address"].unique().tolist()
+    # Process the user input
+    search_term_cleaned = remove_punctuation(search_term)
+    if search_term_cleaned:
+        filtered_inspections = inspections[inspections['name_cleaned'].str.contains(search_term_cleaned, case=False, na=False)]
+        if not filtered_inspections.empty:
+            options = filtered_inspections["address"].unique().tolist()
             selected_location = st.selectbox("Select a location:", options)
         else:
             st.warning("No matching restaurants found. Try another search term.")
@@ -58,25 +64,46 @@ with col2:
     else:
         selected_location = None
 
+    if selected_location:
+        st.divider()
+        selected_data = get_restaurant_data(selected_location, search_term_cleaned)
+
+        # Checking latest risk assessment of restaurant
+        if selected_data['risk'].iloc[0] == 'Risk 1 (High)':
+            st.write('Heads up! This is a :red[High] :red[Risk] establishment, which means they will receive inspections much more frequently due to their bad track record.')
+        elif selected_data['risk'].iloc[0] == 'Risk 2 (Medium)':
+            st.write('This is a :orange[Medium] :orange[Risk] establishment, which means they will receive inspections slightly more frequently due to their track record.')
+        elif selected_data['risk'].iloc[0] == 'Risk 3 (Low)':
+            st.write('This is a :green[Low] :green[Risk]establishment, which means they have performed well and \
+                        not warranted extra attention from the health deparment for any critical safety violations.')
+        
+with mid_col:
+    
+    # 3. Filter dataframe and plot graphs
+    if selected_location:
+        st.header('History of Inspections', divider = 'red')
+        # Filter dataframe based on user selection
+        selected_data = get_restaurant_data(selected_location, search_term_cleaned)
+
+        # First plot
+        st_plots.plot_inspection_history(selected_data)
+
+        with st.expander("Additional Info"):
+            st.markdown("### TBD")
+            
+with right_col:
+
+    if selected_location: 
+        st.header('Info', divider = 'red')
+        st.write('This graph helps visualize the violations broken per inspection date.')
+        st.markdown('#')
+        st.write('Severity of the violations are represented on scale of :blue[1] to :red[10].')
+        st.write('The size of each point grows relative to the number of violations.')
+        
+
+    
 
 
-# 3. Filter dataframe and plot graphs
-if selected_location:
-    # Filter dataframe based on user selection
-    selected_data = df[
-        (df["aka_name"].str.contains(search_term, case=False, na=False)) &
-        (df["address"] == selected_location)
-    ].sort_values(by = 'inspection_date')
-    
-    st.divider()
-    st.markdown('''
-                ## Inspection History
-                - Dots scaling with number of violations
-                - **Danger Zone:** 7 or higher severity level
-                ''')
-    st_plots.plot_inspection_history(selected_data)
-    
-st.markdown("---")
 
 
 
