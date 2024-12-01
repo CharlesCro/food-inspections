@@ -70,12 +70,11 @@ with left_col:
 
         # Checking latest risk assessment of restaurant
         if selected_data['risk'].iloc[0] == 'Risk 1 (High)':
-            st.write('Heads up! This is a :red[High] :red[Risk] establishment, which means they will receive inspections much more frequently due to their bad track record.')
+            st.write('Heads up! This is a :red[High] :red[Risk] establishment')
         elif selected_data['risk'].iloc[0] == 'Risk 2 (Medium)':
-            st.write('This is a :orange[Medium] :orange[Risk] establishment, which means they will receive inspections slightly more frequently due to their track record.')
+            st.write('This is a :orange[Medium] :orange[Risk] establishment')
         elif selected_data['risk'].iloc[0] == 'Risk 3 (Low)':
-            st.write('This is a :green[Low] :green[Risk]establishment, which means they have performed well and \
-                        not warranted extra attention from the health deparment for any critical safety violations.')
+            st.write('This is a :green[Low] :green[Risk]establishment')
         
 with mid_col:
     
