@@ -35,7 +35,7 @@ When outbreaks and recalls break the news cycle, this is when most people know t
 # Methodology
 
 
-### [Exploratory Data Analysis](code/notebooks/01_eda.ipynb)
+### [Exploratory Data Analysis](code/notebooks/01_EDA.ipynb)
 
 
 - [Dataset Source](https://data.cityofchicago.org/Health-Human-Services/Food-Inspections-7-1-2018-Present/qizy-d2wf/about_data)
