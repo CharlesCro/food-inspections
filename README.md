@@ -121,7 +121,7 @@ Results were more promising than expected, but I would like to obtain a higher *
 
 ---
 
-### FiFo App
+### App
 
 **Instructions for running `app_demo.py`**
 
