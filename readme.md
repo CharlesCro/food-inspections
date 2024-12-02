@@ -35,7 +35,7 @@ When outbreaks and recalls break the news cycle, this is when most people know t
 # Methodology
 
 
-### [Exploratory Data Analysis](code/notebooks/01_eda.ipynb)
+### [Exploratory Data Analysis](code/notebooks/01_EDA.ipynb)
 
 
 - [Dataset Source](https://data.cityofchicago.org/Health-Human-Services/Food-Inspections-7-1-2018-Present/qizy-d2wf/about_data)
@@ -56,6 +56,14 @@ One step performed was mapping the inspection types to definitions more understa
 
 
 ![Inspection Types Plot](images/inspection_types.png)
+
+
+**Simplification of Inspection Results for Modeling**
+
+To streamline the problem and focus on binary classification, inspection results were simplified to "Pass" or "Fail." I referenced [Chicago.gov](https://www.chicago.gov/city/en/depts/cdph/provdrs/food_safety.html) to make many judgement calls such as this one where I deem a **Pass w/ Conditions** to have virtually the same merits as a straight **Pass**. Non-binary results were excluded from the analysis.
+
+
+![Inspection Results Plot](images/inspection_results.png)
 
 
 **Feature Engineering**
