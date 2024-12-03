@@ -227,7 +227,7 @@ class Stats:
         plt.yticks(size = 14, color = 'white')
         plt.xticks([], [])
 
-        plt.title(f'Accuracy: {accuracy}%', fontsize = 30, color = 'red', fontweight = 'bold', pad = 30)
+        plt.title(f'Accuracy: {accuracy}%', fontsize = 30, color = 'deepskyblue', fontweight = 'bold', pad = 30)
         plt.legend(loc = 'lower left', fontsize = 14, labelcolor = 'white', frameon = False, bbox_to_anchor = (1, 0.5))
 
         # Show plot in Streamlit.
