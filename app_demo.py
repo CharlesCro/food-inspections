@@ -21,7 +21,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from code.plotting.st_helpers import Stats, Utils
+from code.libs.st_helpers import Stats, Utils
 
 # Style customization.
 st.set_page_config(layout = 'wide', page_title = 'FiFo Demo')
