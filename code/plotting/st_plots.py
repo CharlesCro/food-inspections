@@ -1,4 +1,10 @@
-import altair as alt
+'''
+    This class is meant to be imported in app_demo.py and holds all plotting functions for the Streamlit app
+    in order for the main app's source code to remain clean and concise. As more visualisations get developed,
+    their code will be placed in this file so the Streamlit app can utilise them with ease.
+'''
+
+# Imports
 import streamlit as st
 import pandas as pd
 import seaborn as sns
@@ -6,96 +12,56 @@ import matplotlib.pyplot as plt
 
 class st_plots:
 
-    def plot_inspection_history(df):
+    def plot_inspection_history(restaurant):
         '''
-            This is a improved test function to display the inspection history of a single location
+            Plots the inspection history for a restaurant, showing the severity levels of violations over time.
         '''
+        # Transform violation codes and severity levels into a summarized DataFrame grouped by inspection date and severity.
         expanded_data = []
-        for idx, row in df.iterrows():
+        for idx, row in restaurant.iterrows():
             for code, severity in zip(row['violation_codes'], row['severity_levels']):
                 expanded_data.append([row['inspection_date'], severity])
         
         expanded_df = pd.DataFrame(expanded_data, columns=['inspection_date', 'severity_level'])
-        count_df = expanded_df.groupby(['inspection_date', 'severity_level']).size().reset_index(name='count')
-        count_df['severity_level'] = pd.to_numeric(count_df['severity_level'], errors='coerce')
+        count_df = expanded_df.groupby(['inspection_date', 'severity_level']).size().reset_index(name = 'count')
+        count_df['severity_level'] = pd.to_numeric(count_df['severity_level'], errors = 'coerce')
     
-        plt.figure(figsize=(10, 6))
+
+        plt.figure(figsize = (10, 6))
     
-        # Use a simple, modern color palette that fits with Streamlit's aesthetic
-        sns.scatterplot(data=count_df, x='inspection_date', y='severity_level', size='count', 
-                        hue='severity_level', palette='coolwarm', sizes=(200, 1200), legend=None)
+        # Scatter plot of violations by severity level and inspection date.
+        sns.scatterplot(data=count_df, x = 'inspection_date', y = 'severity_level', size = 'count', 
+                        hue = 'severity_level', palette = 'coolwarm', sizes = (200, 1200), legend = None)
         
-        # Step 6: Set y-axis limits from 1 to 10
+        # Customization.
         plt.ylim(-1, 11)
         
-        # Step 7: Customize the plot for dark theme and white labels/lines
-        plt.title('Severity Level of Violations', fontsize=18, fontweight='heavy', color='white', pad = 20)
-        plt.xlabel('Inspection Date', fontsize=20, fontweight='normal', color='white', labelpad = 20)
-        plt.ylabel('Minimal Risk                              Critical Risk', fontsize=12, fontweight='bold', color='white')
+        plt.title('Severity Level of Violations', fontsize = 18, fontweight = 'heavy', color = 'white', pad = 20)
+        plt.xlabel('Inspection Date', fontsize = 20, fontweight = 'normal', color = 'white', labelpad = 20)
+        plt.ylabel('Minimal Risk                              Critical Risk', fontsize = 12, fontweight = 'bold', color = 'white')
         
-        # Customize tick labels for readability and style (make them white)
-        plt.xticks(fontweight = 'bold', fontsize=10, color='white', rotation = 45)
-        plt.yticks(fontsize=12, fontweight = 'bold', color='white')
+        plt.xticks(fontweight = 'bold', fontsize = 10, color = 'white', rotation = 45)
+        plt.yticks(fontsize = 12, fontweight = 'bold', color = 'white')
         
-        # Change grid lines to white, with subtle dashed style
-        plt.grid(True, linestyle='--', alpha=0.6, color='white')
-        
-        # Set background to transparent (for embedding in Streamlit with a dark background)
-        plt.gca().set_facecolor('none')  # Transparent background for the axes
-        plt.gcf().patch.set_facecolor('none')  # Transparent figure background
-    
-        # Remove border
+        plt.grid(True, linestyle = '--', alpha = 0.6, color = 'white')
+
         ax = plt.gca()
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.spines['bottom'].set_visible(False)
         
-        # Display the plot in Streamlit
+        # Set background to transparent.
+        ax.set_facecolor('none')  
+        plt.gcf().patch.set_facecolor('none')  
+    
+        # Remove borders.
+        for spine in ['top', 'right', 'left', 'bottom']:
+            ax.spines[spine].set_visible(False)
+        
+        plt.tight_layout()
+
+        # Display the plot in Streamlit.
         st.pyplot(plt)
         
-        # Ensure layout is tight for better display
-        plt.tight_layout()
-    
-    
-    def test_plot_altair(df):
-        '''
-            This is a test function to display the violation count history of a single location
-            Using Altair
-        '''
-        # to use index as X value in altair
-        df = df.reset_index().rename(columns={'inspection_date': 'Date'})
         
-        # Altair Plot
-        # Create Altair scatter plot
-        scatter_plot = alt.Chart(df).mark_circle(
-            size=350,  # Size of dots
-            color='crimson',  # Color of dots
-            stroke='black',  # Border color
-            strokeWidth=1.5,  # Border width
-            opacity=0.8  # Transparency for a modern look
-        ).encode(
-            x=alt.X('Date', title='Inspection Date', axis=alt.Axis(labelAngle=0)),  # Use index as X-axis
-            y=alt.Y('violation_count', title='Number of Violations'),  # Y-axis from the 'y' column
-            tooltip=['Date', 'violation_count']  # Add tooltips for interactivity
-        ).properties(
-            width=600,  # Chart width
-            height=400,  # Chart height
-            title="Violation Count by Inspection"
-        ).configure_axis(
-            labelFontSize=12,
-            titleFontSize=20,
-            grid=True  # Minimalistic look by removing grid lines
-        ).configure_title(
-            fontSize=30,
-            font='Arial',
-            anchor='middle',
-            color='white'
-        )
     
-        # Render the chart in Streamlit
-        st.altair_chart(scatter_plot, use_container_width=True)
-
 
 
 
