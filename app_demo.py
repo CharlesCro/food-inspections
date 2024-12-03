@@ -14,7 +14,6 @@ helping users make informed decisions before deciding where to eat.
 '''
 
 # Imports
-import string
 import pickle
 
 import streamlit as st
@@ -22,7 +21,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from code.plotting.st_plots import st_plots
+from code.plotting.st_helpers import Stats, Utils
 
 # Style customization.
 st.set_page_config(layout = 'wide', page_title = 'FiFo Demo')
@@ -33,26 +32,6 @@ inspections = pd.read_csv('data/processed_chicago.csv')
 # Load model.
 with open('models/predict_inspection.pkl', 'rb') as pickle_in:
     insp_predictor = pickle.load(pickle_in)
-
-def remove_punctuation(text):
-    '''
-        Helper function to remove punctuation from user input.
-    '''
-    if isinstance(text, str):
-        return text.translate(str.maketrans('', '', string.punctuation))
-    return text
-
-def get_restaurant_data(selected_location, search_term):
-    '''
-        This function will return a specific restaurant's inspection data
-        given a name and address.
-    '''
-    selected_data = inspections[
-            (inspections['name_cleaned'].str.contains(search_term, case = False, na = False)) &
-            (inspections['address'] == selected_location)
-            ].sort_values(by = 'inspection_date')
-
-    return selected_data
 
 
 # --- Streamlit App Page ---
@@ -90,7 +69,7 @@ with left_col:
     search_term = st.text_input('Search for a restaurant:')
 
     # Process the user input.
-    search_term_cleaned = remove_punctuation(search_term)
+    search_term_cleaned = Utils.remove_punctuation(search_term)
 
     # Once a user input is received, check that restaurant exists in database, then provide all locations.
     if search_term_cleaned:
@@ -105,12 +84,13 @@ with left_col:
         selected_location = None
 
     if selected_location:
-        selected_data = get_restaurant_data(selected_location, search_term_cleaned)
+        selected_data = Utils.get_restaurant_data(selected_location, search_term_cleaned, inspections)
 
-        # Display comparison metrics.
-        st.header('Versus Other Locations', divider = 'blue')
+        # Display comparison metrics if franchise
+        if len(options) > 1:
+            st.header('Versus Other Locations', divider = 'blue')
 
-        st_plots.show_metrics(selected_data, inspections)
+            Stats.show_comparison_metrics(selected_data, inspections)
 
 with mid_col:
     
@@ -118,27 +98,28 @@ with mid_col:
     if selected_location:
         st.header('History of Inspections', divider = 'red')
         # Filter dataframe based on user selection.
-        selected_data = get_restaurant_data(selected_location, search_term_cleaned)
+        selected_data = Utils.get_restaurant_data(selected_location, search_term_cleaned, inspections)
 
         # Visualise inspection violations over time.
-        st_plots.plot_inspection_history(selected_data)
+        Stats.plot_inspection_history(selected_data)
 
         with st.expander('Beta Test Classification Model'):
             st.header('Predictions of This Restaurant\'s Inspections', divider = 'red')
 
             # Visualise model predictions vs true labels.
-            st_plots.get_predictions(selected_data, inspections, insp_predictor)
+            Stats.show_predictions(selected_data, inspections, insp_predictor)
             
 with right_col:
     # Details section explaining graphs.
     if selected_location:
-        selected_data = get_restaurant_data(selected_location, search_term_cleaned)
+        selected_data = Utils.get_restaurant_data(selected_location, search_term_cleaned, inspections)
 
         st.header('Info', divider = 'red')
         st.markdown('''
                     - This graph helps visualize the violations broken per inspection.
                     - Severity of the violations are represented on scale of :blue[1] to :red[10].
                     - The size of each point grows relative to the number of violations.
+                    - Inspections are :red[Red] if they failed or :blue[Blue] if they passed.
                     ''')
 
         # Checking latest risk assessment of restaurant.

@@ -5,7 +5,7 @@
 '''
 
 # Imports
-import pickle
+import string
 import ast
 import streamlit as st
 import pandas as pd
@@ -15,19 +15,48 @@ import matplotlib.pyplot as plt
 # Override default font
 plt.rcParams['font.family'] = 'DejaVu Sans'
 
-class st_plots:
+class Utils:
+    '''
+        This class consists of any helper / utility functions I use throughout the Streamlit app.
+    '''
+
+    def get_restaurant_data(selected_location, search_term, inspections):
+        '''
+            This function will return a specific restaurant's inspection data
+            given a name and address.
+        '''
+        selected_data = inspections[
+                (inspections['name_cleaned'].str.contains(search_term, case = False, na = False)) &
+                (inspections['address'] == selected_location)
+                ].sort_values(by = 'inspection_date')
+
+        return selected_data
+    
+    def remove_punctuation(text):
+        '''
+            Helper function to remove punctuation from user input.
+        '''
+        if isinstance(text, str):
+            return text.translate(str.maketrans('', '', string.punctuation))
+        return text
+
+class Stats:
+    '''
+        This class consists of the visualisation functions for various stats I'd like to display in the Streamlit app.
+    '''
 
     def plot_inspection_history(restaurant):
         '''
             Plots the inspection history for a restaurant, showing the severity levels of violations over time.
         '''
         # Transform violation codes and severity levels into a summarized DataFrame grouped by inspection date and severity.
+        # Really suboptimal code here, but I have to wait till post-bootcamp to fix, this was the only thing I could get to run.
         expanded_data = []
         for idx, row in restaurant.iterrows():
             for code, severity in zip(row['violation_codes'], row['severity_levels']):
-                expanded_data.append([row['inspection_date'], severity])
+                expanded_data.append([row['inspection_date'], severity, row['results']])
         
-        expanded_df = pd.DataFrame(expanded_data, columns=['inspection_date', 'severity_level'])
+        expanded_df = pd.DataFrame(expanded_data, columns=['inspection_date', 'severity_level', 'results'])
         count_df = expanded_df.groupby(['inspection_date', 'severity_level']).size().reset_index(name = 'count')
         count_df['severity_level'] = pd.to_numeric(count_df['severity_level'], errors = 'coerce')
     
@@ -45,12 +74,21 @@ class st_plots:
         plt.xlabel('Inspection Date', fontsize = 25, fontweight = 'bold', color = 'white', labelpad = 20)
         plt.ylabel('Minimal Risk                              Critical Risk', fontsize = 12, fontweight = 'bold', color = 'white')
         
-        plt.xticks(fontweight = 'bold', fontsize = 10, color = 'white', rotation = 45)
+        plt.xticks(fontweight = 'bold', fontsize = 10, rotation = 40)
         plt.yticks(fontsize = 12, fontweight = 'bold', color = 'white')
         
         plt.grid(True, linestyle = '--', alpha = 0.6, color = 'white')
 
         ax = plt.gca()
+
+        # Color coding x tick labels.
+        x_ticks = ax.get_xticklabels()
+        for tick in x_ticks:
+            date_str = tick.get_text()
+            result = expanded_df[expanded_df['inspection_date'] == date_str]['results']
+            
+            color = 'deepskyblue' if result.iloc[0] == 'Pass' else 'crimson'
+            tick.set_color(color)
         
         # Set background to transparent.
         ax.set_facecolor('none')  
@@ -66,7 +104,7 @@ class st_plots:
         st.pyplot(plt)
         
         
-    def show_metrics(restaurant, chicago):
+    def show_comparison_metrics(restaurant, inspections):
         '''
             This function will take the selected restaurant and entire database as arguments
             in order to calculate inspection data compared to other locations in the Chicago area.
@@ -77,7 +115,7 @@ class st_plots:
         success_rate = len(restaurant[restaurant['results'] == 'Pass']) / len(restaurant['results'])
 
         # Calculate averages of other locations.
-        all_locations = chicago[chicago['name_cleaned'] == restaurant['name_cleaned'].iloc[0]]
+        all_locations = inspections[inspections['name_cleaned'] == restaurant['name_cleaned'].iloc[0]]
         avg_violations_franchise = all_locations['violation_count'].mean()
         avg_severity_franchise = all_locations['average_severity'].mean()
         success_rate_franchise = len(all_locations[all_locations['results'] == 'Pass']) / len(all_locations['results'])
@@ -124,7 +162,7 @@ class st_plots:
                 delta_color = 'inverse')
         
 
-    def get_predictions(restaurant, chicago, insp_predictor):
+    def show_predictions(restaurant, inspections, insp_predictor):
         '''
             This function will used the model pickled in from app_demo.py to make predictions for each inspection of a restaurant.
             Preprocessing code and decision threshold were transferred over from 02_modelling notebook.
@@ -135,7 +173,7 @@ class st_plots:
         restaurant['results'] = restaurant['results'].map({'Pass': 0, 'Fail': 1})
         restaurant['violation_codes'] = restaurant['violation_codes'].apply(ast.literal_eval)
 
-        unique_codes = sorted(set(code for codes in chicago['violation_codes'].apply(ast.literal_eval) for code in codes))
+        unique_codes = sorted(set(code for codes in inspections['violation_codes'].apply(ast.literal_eval) for code in codes))
         for code in unique_codes:
             column_name = f'violation_code_{code}'
             restaurant[column_name] = restaurant['violation_codes'].apply(lambda x: 1 if code in x else 0)
@@ -155,6 +193,7 @@ class st_plots:
         true_labels = restaurant['results'].values
         predicted_labels = y_preds.values
         correct = (true_labels == predicted_labels).astype(int)
+        accuracy = round((sum(correct) / len(index)) * 100)
 
         # Visualising model predictions by inpsection date.
         plt.figure(figsize = (6, 6))
@@ -188,7 +227,7 @@ class st_plots:
         plt.yticks(size = 14, color = 'white')
         plt.xticks([], [])
 
-        plt.title('Case by Case Basis', fontsize = 30, color = 'white', fontweight = 'bold', pad = 30)
+        plt.title(f'Accuracy: {accuracy}%', fontsize = 30, color = 'red', fontweight = 'bold', pad = 30)
         plt.legend(loc = 'lower left', fontsize = 14, labelcolor = 'white', frameon = False, bbox_to_anchor = (1, 0.5))
 
         # Show plot in Streamlit.

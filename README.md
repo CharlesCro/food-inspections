@@ -138,7 +138,7 @@ Results were more promising than expected, but I would like to obtain a higher *
 3. With your terminal in the main directory of this project folder, run this line of code:
 	`streamlit run app_demo.py`
 
-![App Screenshot](images/demo_screenshot.png)
+![App Screenshot](images/demo_app.png)
 
 ---
 
