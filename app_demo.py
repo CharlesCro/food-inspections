@@ -6,8 +6,8 @@ This app enables users to explore food safety inspection data for restaurants in
 Features include:
 - A search bar to find restaurants by name.
 - A dropdown to select restaurant locations.
-- Visualisations of inspection history.
-- Sidebars with app information and instructions.
+- Visualisations and metrics of inspection history.
+- Functionality to see how my classification model performs on a restaurant's inspections.
 
 The app provides insights into food safety violations and risk assessments, 
 helping users make informed decisions before deciding where to eat.
@@ -16,7 +16,6 @@ helping users make informed decisions before deciding where to eat.
 # Imports
 import string
 import pickle
-import ast
 
 import streamlit as st
 import pandas as pd
@@ -26,7 +25,6 @@ import matplotlib.pyplot as plt
 from code.plotting.st_plots import st_plots
 
 # Style customization.
-plt.rcParams['font.family'] = 'DejaVu Sans'
 st.set_page_config(layout = 'wide', page_title = 'FiFo Demo')
 
 # Load database.
@@ -56,37 +54,6 @@ def get_restaurant_data(selected_location, search_term):
 
     return selected_data
 
-def get_prediction(restaurant):
-    '''
-        This function will used the model pickled in to make predictions for each inspection of a restaurant.
-        Preprocessing code and decision threshold were transferred over from 02_modelling notebook.
-    '''
-    decision_threshold = 0.2338
-
-    restaurant['results'] = restaurant['results'].map({'Pass': 0, 'Fail': 1})
-
-    restaurant['violation_codes'] = restaurant['violation_codes'].apply(ast.literal_eval)
-
-    unique_codes = sorted(set(code for codes in inspections['violation_codes'].apply(ast.literal_eval) for code in codes))
-
-    for code in unique_codes:
-        column_name = f'violation_code_{code}'
-        restaurant[column_name] = restaurant['violation_codes'].apply(lambda x: 1 if code in x else 0)
-
-    risk_mapping = {'Risk 1 (High)': 3, 'Risk 2 (Medium)': 2, 'Risk 3 (Low)': 1}
-    restaurant['risk'] = restaurant['risk'].map(risk_mapping)
-
-    X = restaurant.drop(columns = ['inspection_id', 'dba_name', 'aka_name', 'license', 'facility_type', 'address', 'inspection_date', 'results',
-       'violations', 'name_cleaned', 'violation_codes', 'severity_levels'])
-    
-    y_probs = insp_predictor.predict_proba(X)[:, 1]
-    y_preds = (y_probs >= decision_threshold).astype(int)
-
-    y_preds = pd.Series(y_preds).map({0: 'Pass', 1: 'Fail'})
-
-    return y_preds
-
-
 
 # --- Streamlit App Page ---
 
@@ -97,10 +64,21 @@ st.title(':blue[Fi]:red[Fo]')
 st.sidebar.title('About')
 st.sidebar.divider()
 st.sidebar.info(
-    """
-    This app allows users to search for restaurants, select a location, 
+    '''
+    The :blue[Fi]:red[Fo] app allows users to search for restaurants in the Chicago area, select a location, 
     and view graphs and other important info based on food safety data related to the selected restaurant.
-    """
+    ---
+
+    ---
+
+    You may also test my classification model :blue[Jeffrey] on restaurant inspection results and see how he does.
+    Please be kind to :blue[Jeffrey], he's still learning! 
+
+    ---
+
+    :orange[Developed] :orange[by:]
+    Charles Crocicchia
+    '''
 )
 
 # Set page layout.
@@ -127,16 +105,12 @@ with left_col:
         selected_location = None
 
     if selected_location:
-        st.divider()
         selected_data = get_restaurant_data(selected_location, search_term_cleaned)
 
-        # Checking latest risk assessment of restaurant.
-        if selected_data['risk'].iloc[0] == 'Risk 1 (High)':
-            st.write('Heads up! This is a :red[High] :red[Risk] establishment')
-        elif selected_data['risk'].iloc[0] == 'Risk 2 (Medium)':
-            st.write('This is a :orange[Medium] :orange[Risk] establishment')
-        elif selected_data['risk'].iloc[0] == 'Risk 3 (Low)':
-            st.write('This is a :green[Low] :green[Risk]establishment')
+        # Display comparison metrics.
+        st.header('Versus Other Locations', divider = 'blue')
+
+        st_plots.show_metrics(selected_data, inspections)
 
 with mid_col:
     
@@ -146,47 +120,44 @@ with mid_col:
         # Filter dataframe based on user selection.
         selected_data = get_restaurant_data(selected_location, search_term_cleaned)
 
-        # First plot.
+        # Visualise inspection violations over time.
         st_plots.plot_inspection_history(selected_data)
 
         with st.expander('Beta Test Classification Model'):
-            st.header('Let\'s see how our little :blue[Fi]:red[Fo] model performs. Please be kind, he\'s still learning!', divider = 'blue')
+            st.header('Predictions of This Restaurant\'s Inspections', divider = 'red')
 
-            y_true = selected_data['results']
-
-            y_preds = get_prediction(selected_data)
-
-            for i in range(len(selected_data)):
-                name = selected_data.iloc[i]['aka_name']
-                date = selected_data.iloc[i]['inspection_date']
-                true = f':blue[{y_true.iloc[i]}]' if y_true.iloc[i] == 'Pass' else f':red[{y_true.iloc[i]}]'
-                pred = f':blue[{y_preds.iloc[i]}]' if y_preds.iloc[i] == 'Pass' else f':red[{y_preds.iloc[i]}]'
-
-                st.header(f'Inspection of {date}', divider = 'red')
-                st.write(f'The actual result was {true}')
-                st.write(f'The model predicted {pred}')
-
-                if true == pred:
-                    st.header('Nice! Good job little :blue[Fi]:red[Fo]!')
-                else:
-                    st.header('Oof! Go study some more little :blue[Fi]:red[Fo]!')
-
-                st.divider()
-
-
-                
-
-                
+            # Visualise model predictions vs true labels.
+            st_plots.get_predictions(selected_data, inspections, insp_predictor)
             
 with right_col:
     # Details section explaining graphs.
-    if selected_location: 
+    if selected_location:
+        selected_data = get_restaurant_data(selected_location, search_term_cleaned)
+
         st.header('Info', divider = 'red')
-        st.write('This graph helps visualize the violations broken per inspection date.')
-        st.markdown('#')
-        st.write('Severity of the violations are represented on scale of :blue[1] to :red[10].')
-        st.write('The size of each point grows relative to the number of violations.')
-        
+        st.markdown('''
+                    - This graph helps visualize the violations broken per inspection.
+                    - Severity of the violations are represented on scale of :blue[1] to :red[10].
+                    - The size of each point grows relative to the number of violations.
+                    ''')
+
+        # Checking latest risk assessment of restaurant.
+        if selected_data['risk'].iloc[0] == 'Risk 1 (High)':
+            st.write('This is a :red[High] :red[Risk] establishment')
+        elif selected_data['risk'].iloc[0] == 'Risk 2 (Medium)':
+            st.write('This is a :orange[Medium] :orange[Risk] establishment')
+        elif selected_data['risk'].iloc[0] == 'Risk 3 (Low)':
+            st.write('This is a :green[Low] :green[Risk]establishment')
+
+        with st.expander('Risk Explained'):
+            st.write('''
+                        :red[1.] :red[High] :red[Risk]: These establishments handle complex food preparations, like cooking, cooling, reheating, or handling raw ingredients extensively. They also serve vulnerable populations or use advanced techniques like vacuum packaging.
+
+                        :orange[2.] :orange[Medium] :orange[Risk]: These places serve foods prepared the same day or minimally assembled from pre-approved sources, with simpler processes compared to high-risk facilities.
+
+                        :blue[3.] :blue[Low] :blue[Risk]: These serve mostly prepackaged or simple foods and drinks, with minimal preparation or handling of potentially hazardous items.
+                     ''')
+
 
     
 
