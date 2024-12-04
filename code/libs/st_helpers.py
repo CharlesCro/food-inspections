@@ -12,7 +12,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Override default font
+# Override default font.
 plt.rcParams['font.family'] = 'DejaVu Sans'
 
 class Utils:

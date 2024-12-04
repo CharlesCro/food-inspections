@@ -13,7 +13,7 @@ The app provides insights into food safety violations and risk assessments,
 helping users make informed decisions before deciding where to eat.
 '''
 
-# Imports
+# Imports.
 import pickle
 
 import streamlit as st

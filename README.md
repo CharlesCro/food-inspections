@@ -1,4 +1,5 @@
-# FiFo (*F*ood *I*nspections *F*or the *O*rdinary)
+# ![logo](images/FiFo_logo.png)
+# Food Inspections for the Ordinary
 ###  The Problem at Hand
 
 Have you ever observed the letter grade restaurants or coffee shops keep posted on their wall? An **A** would reassure you, and a **B** might raise questions in your mind, but at the end of the day you know the establishment and you trust them. But should you? In my years of experience in the restaurant industry, it is my belief that this single letter is not a sufficient representation of how the restaurant conducts (*or has conducted in the past*) healthy and safe practices.
@@ -166,13 +167,13 @@ I went into the modelling stage with low expectations and was pleasantly surpris
 
 
 # Software Requirements
-- Python
-- Pandas
-- NumPy
-- Matplotlib
-- Seaborn
-- Scikit-learn
-- Streamlit
+- Python (3.8.20)
+- Pandas (2.0.3)
+- NumPy (1.24.3)
+- Matplotlib (3.7.2)
+- Seaborn (0.13.2)
+- Scikit-learn (1.3.0)
+- Streamlit (1.40.1)
 
 **Data Set Download Instructions:**
 
