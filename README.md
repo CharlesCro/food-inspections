@@ -1,4 +1,4 @@
-# ![logo](images/FiFo_logo.png)
+# ![logo](images/fifo_logo.png)
 # Food Inspections for the Ordinary
 ###  The Problem at Hand
 
