@@ -151,7 +151,7 @@ Results were more promising than expected, but I would like to obtain a higher *
 
 **App Development**
 
-One of the main skills as a data scientist is being able to visualise information, and while I have been working on that throughout the entirety of the GA bootcamp, full on app design is a whole other beast. My greatest learning experience in this process was understanding how all facets of code work together to create a final product that, if it works, is truly a beautiful thing. 
+I thoroughly enjoyed practicing my web app development skills along with data visualizations to create an end product for the consumer. I look forward to working more on transferring the information from different inspection data sets into something which a customer can understand and appreciate.
 
 
 **Model**
