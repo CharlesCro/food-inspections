@@ -131,7 +131,7 @@ Results were more promising than expected, but I would like to obtain a higher *
 
 ### App
 
-[Click here to view app demo]()
+[Click here to view app demo](https://foodinspections.streamlit.app/)
 
 
 ![App Screenshot](images/demo_app.png)
