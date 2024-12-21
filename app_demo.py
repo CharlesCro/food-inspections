@@ -13,14 +13,16 @@ The app provides insights into food safety violations and risk assessments,
 helping users make informed decisions before deciding where to eat.
 '''
 
-# Imports.
+# Standard Libraries.
 import pickle
 
+# Non-Standard Libraries.
 import streamlit as st
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# Custom Modules.
 from code.libs.st_helpers import Stats, Utils
 
 # Style customization.
@@ -46,12 +48,10 @@ st.sidebar.info(
     '''
     The :blue[Fi]:red[Fo] app allows users to search for restaurants in the Chicago area, select a location, 
     and view graphs and other important info based on food safety data related to the selected restaurant.
-    ---
 
     ---
 
-    You may also test my classification model :blue[Jeffrey] on restaurant inspection results and see how he does.
-    Please be kind to :blue[Jeffrey], he's still learning! 
+    You may also expand the bottom to view how my classification model has predicted the results previous inspections for each restaurant in Chicago.
 
     ---
 
@@ -103,8 +103,8 @@ with mid_col:
         # Visualise inspection violations over time.
         Stats.plot_inspection_history(selected_data)
 
-        with st.expander('Beta Test Classification Model'):
-            st.header('Predictions of This Restaurant\'s Inspections', divider = 'red')
+        with st.expander('Test Classification Model (Logistic Regression)'):
+            st.header(':blue[Pass] / :red[Fail] Predictions', divider = 'red')
 
             # Visualise model predictions vs true labels.
             Stats.show_predictions(selected_data, inspections, insp_predictor)

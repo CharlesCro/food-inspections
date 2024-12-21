@@ -4,9 +4,11 @@
     their code will be placed in this file so the Streamlit app can utilise them with ease.
 '''
 
-# Imports
+# Standard Libaries
 import string
 import ast
+
+# Non-Standard Libraries
 import streamlit as st
 import pandas as pd
 import seaborn as sns
