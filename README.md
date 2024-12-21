@@ -133,14 +133,16 @@ Results were more promising than expected, but I would like to obtain a higher *
 
 [Click here to view app demo]()
 
-**Instructions for running `app_demo.py` if you forked this repo**
-
-1. Make sure you have executed all code in `01_eda` in order for the processed data to be properly saved to the `data/` folder as `processed_chicago.csv`. Change file paths at your own discretion, as long as it matches with the source code of `app_demo.py`.
-2. Ensure you have installed all required packages listed in **Software Requirements**.
-3. With your terminal in the main directory of this project folder, run this line of code:
-	`streamlit run app_demo.py`
 
 ![App Screenshot](images/demo_app.png)
+
+
+**Instructions for running `app_demo.py` if you forked this repo**
+
+1. For the most up to date version of the data set to appear in the app, make sure you have executed all code in `01_EDA` in order for the processed data to be updated the `data/` folder as `processed_chicago.csv`. Change file paths at your own discretion, as long as it matches with the source code of `app_demo.py`.
+2. Ensure you have installed all correct packages listed in the **Software** section.
+3. With your terminal in the main directory of this project folder, run this line of code:
+	`streamlit run app_demo.py`
 
 ---
 
@@ -184,9 +186,6 @@ I went into the modelling stage with low expectations and was pleasantly surpris
 
 4. Place the downloaded CSV file in the `data/` folder of this repo.
 
-
-
-*Attention:* Before running `app_demo.py` the dataset must be read, processed, and exported to the `data/` folder via the code cells in the `01_EDA` notebook.
 
 ---
 
